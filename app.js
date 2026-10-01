@@ -66,9 +66,23 @@ const printButton =
 const scannerBackButton =
   document.getElementById("scannerBackButton");
 
-
 const itemForm =
   document.getElementById("itemForm");
+
+  const inventoryButton =
+  document.getElementById(
+    "inventoryButton"
+  );
+
+const inventoryScreen =
+  document.getElementById(
+    "inventoryScreen"
+  );
+
+const inventoryBackButton =
+  document.getElementById(
+    "inventoryBackButton"
+  );
 
 
 /* ==========================================
@@ -221,6 +235,38 @@ addItemButton.addEventListener(
   }
 );
 
+inventoryBackButton.addEventListener(
+  "click",
+  function () {
+
+    inventoryScreen.classList.add(
+      "hidden"
+    );
+
+    homeScreen.classList.remove(
+      "hidden"
+    );
+
+  }
+);
+
+inventoryButton.addEventListener(
+  "click",
+  function () {
+
+    homeScreen.classList.add(
+      "hidden"
+    );
+
+    inventoryScreen.classList.remove(
+      "hidden"
+    );
+
+    loadInventory();
+
+  }
+);
+
 
 /* ==========================================
    BACK → HOME
@@ -352,6 +398,7 @@ function startScanner() {
 async function handleScannedBarcode(
   barcodeNumber
 ) {
+
 
   scanResult.textContent =
     "Looking up item...";
@@ -1299,3 +1346,75 @@ doneButton.addEventListener(
 
   }
 );
+
+/* ==========================================
+   SHOW INVENTORY FROM SUPABASE
+========================================== */
+
+async function loadInventory() {
+
+  const tableBody =
+    document.getElementById(
+      "inventoryTableBody"
+    );
+
+  tableBody.innerHTML =
+    "<tr><td colspan='6'>Loading...</td></tr>";
+
+  try {
+
+    const { data, error } =
+      await supabaseClient
+        .from("items")
+        .select("*")
+        .order("id", {
+          ascending: true
+        });
+
+    if (error) {
+      throw error;
+    }
+
+    tableBody.innerHTML = "";
+
+    if (!data || data.length === 0) {
+
+      tableBody.innerHTML =
+        "<tr><td colspan='6'>No items found.</td></tr>";
+
+      return;
+    }
+
+    data.forEach(function(item) {
+
+      const row =
+        document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${item.barcode}</td>
+        <td>${item.item_name}</td>
+        <td>${item.supplier}</td>
+        <td>${item.po_number}</td>
+        <td>${item.carton_number}</td>
+        <td>${item.quantity}</td>
+      `;
+
+      tableBody.appendChild(row);
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Inventory error:",
+      error
+    );
+
+    tableBody.innerHTML =
+      "<tr><td colspan='6'>Could not load inventory.</td></tr>";
+
+  }
+
+}
+
+
