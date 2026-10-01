@@ -1296,3 +1296,21 @@ doneButton.addEventListener(
 
   }
 );
+
+async function testSupabaseConnection() {
+  const { data, error } = await supabaseClient
+    .from("items")
+    .select("id")
+    .limit(1);
+
+  if (error) {
+    console.error("Supabase connection failed:", error);
+    alert("Supabase connection failed. Check the browser console.");
+    return;
+  }
+
+  console.log("Supabase connection successful!", data);
+  alert("Supabase connection successful!");
+}
+
+testSupabaseConnection();
