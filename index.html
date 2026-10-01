@@ -43,6 +43,10 @@
           Add New Item
         </button>
 
+        <button type="button" id="inventoryButton">
+          View Inventory
+        </button>
+
       </div>
 
     </section>
@@ -275,6 +279,50 @@
       </div>
 
     </section>
+
+    <section id="inventoryScreen" class="hidden">
+
+      <header class="app-header">
+        <button
+          type="button"
+          class="back-button"
+          id="inventoryBackButton"
+        >
+          ← Back
+        </button>
+    
+        <h1>Inventory</h1>
+      </header>
+    
+      <div class="screen-content">
+    
+        <div class="inventory-table-container">
+    
+          <table class="inventory-table">
+    
+            <thead>
+              <tr>
+                <th>Barcode</th>
+                <th>Item Name</th>
+                <th>Supplier</th>
+                <th>PO #</th>
+                <th>Carton #</th>
+                <th>Qty</th>
+              </tr>
+            </thead>
+    
+            <tbody id="inventoryTableBody">
+            </tbody>
+    
+          </table>
+    
+        </div>
+    
+      </div>
+    
+    </section>
+
+
 
 
   </main>
