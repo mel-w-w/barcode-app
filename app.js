@@ -115,6 +115,59 @@ function saveItemsDatabase() {
 
 }
 
+/*
+  Save the database to Supabase.
+*/
+
+async function saveItemToSupabase(item) {
+
+  console.log("Trying to save item:", item);
+
+  const { data, error } =
+    await supabaseClient
+      .from("items")
+      .insert([
+        {
+          barcode: item.barcode,
+          supplier: item.supplier,
+          po_number: item.poNumber,
+          item_date: item.date,
+          item_name: item.itemName,
+          code: item.code,
+          carton_number: item.cartonNumber,
+          quantity: Number(item.quantity)
+        }
+      ])
+      .select()
+      .single();
+
+  if (error) {
+
+    console.error(
+      "SUPABASE INSERT ERROR:",
+      error
+    );
+
+    alert(
+      "SUPABASE ERROR:\n\n" +
+      error.message +
+      "\n\nCode: " +
+      error.code +
+      "\n\nDetails: " +
+      error.details
+    );
+
+    throw error;
+  }
+
+  console.log(
+    "Item successfully saved:",
+    data
+  );
+
+  return data;
+}
+
 
 /* ==========================================
    BARCODE NUMBER
@@ -296,55 +349,78 @@ function startScanner() {
    HANDLE SCANNED BARCODE
 ========================================== */
 
-function handleScannedBarcode(
+async function handleScannedBarcode(
   barcodeNumber
 ) {
 
-  const item =
-    itemsDatabase[
-      barcodeNumber
-    ];
+  scanResult.textContent =
+    "Looking up item...";
 
 
-  if (item) {
+  try {
 
-    scanResult.innerHTML =
+    const { data, error } =
+      await supabaseClient
+        .from("items")
+        .select("*")
+        .eq("barcode", barcodeNumber)
+        .limit(1)
+        .maybeSingle();
 
-      "<strong>Item found!</strong><br><br>" +
 
-      "Item Name: " +
-      item.itemName +
-      "<br>" +
+    if (error) {
+      throw error;
+    }
 
-      "Supplier: " +
-      item.supplier +
-      "<br>" +
 
-      "PO #: " +
-      item.poNumber +
-      "<br>" +
+    if (data) {
 
-      "Code: " +
-      item.code +
-      "<br>" +
+      scanResult.innerHTML =
+        "<strong>Item found!</strong><br><br>" +
 
-      "Carton #: " +
-      item.cartonNumber +
-      "<br>" +
+        "Item Name: " +
+        data.item_name +
+        "<br>" +
 
-      "Quantity: " +
-      item.quantity;
+        "Supplier: " +
+        data.supplier +
+        "<br>" +
 
-  }
+        "PO #: " +
+        data.po_number +
+        "<br>" +
 
-  else {
+        "Code: " +
+        data.code +
+        "<br>" +
 
-    scanResult.innerHTML =
+        "Carton #: " +
+        data.carton_number +
+        "<br>" +
 
-      "<strong>Barcode not found.</strong><br><br>" +
+        "Quantity: " +
+        data.quantity;
 
-      "Barcode: " +
-      barcodeNumber;
+    } else {
+
+      scanResult.innerHTML =
+        "<strong>Barcode not found.</strong><br><br>" +
+
+        "Barcode: " +
+        barcodeNumber;
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Scanner database error:",
+      error
+    );
+
+    scanResult.textContent =
+      "Could not look up this item.";
 
   }
 
@@ -416,227 +492,154 @@ scannerBackButton.addEventListener(
 
 itemForm.addEventListener(
   "submit",
-  function (event) {
+  async function(event) {
 
     event.preventDefault();
 
-
-    /* ========================================
-       CREATE BARCODE
-    ======================================== */
-
-    const barcodeNumber =
-      String(
-        nextItemId
-      ).padStart(
-        6,
-        "0"
-      );
+    
 
 
-    nextItemId++;
+    try {
 
 
-    saveNextItemId();
+      const supplier =
+        document.getElementById("supplier").value.trim();
+
+      const poNumber =
+        document.getElementById("poNumber").value.trim();
+
+      const date =
+        document.getElementById("itemDate").value;
+
+      const itemName =
+        document.getElementById("itemName").value.trim();
+
+      const code =
+        document.getElementById("itemCode").value.trim();
+
+      const cartonNumber =
+        document.getElementById("cartonNumber").value.trim();
+
+      const quantity =
+        document.getElementById("quantity").value;
 
 
-    /* ========================================
-       GET INFORMATION
-    ======================================== */
-
-    const supplier =
-      document.getElementById(
-        "supplier"
-      ).value;
 
 
-    const poNumber =
-      document.getElementById(
-        "poNumber"
-      ).value;
+
+      const barcodeNumber =
+        String(nextItemId).padStart(6, "0");
+
+      nextItemId++;
+
+      saveNextItemId();
 
 
-    const date =
-      document.getElementById(
-        "itemDate"
-      ).value;
-
-
-    const itemName =
-      document.getElementById(
-        "itemName"
-      ).value;
-
-
-    const code =
-      document.getElementById(
-        "itemCode"
-      ).value;
-
-
-    const cartonNumber =
-      document.getElementById(
-        "cartonNumber"
-      ).value;
-
-
-    const quantity =
-      document.getElementById(
-        "quantity"
-      ).value;
-
-
-    /* ========================================
-       SAVE ITEM
-    ======================================== */
-
-    itemsDatabase[
-      barcodeNumber
-    ] = {
-
-      barcode:
-        barcodeNumber,
-
-      supplier:
+      const item = {
+        barcode: barcodeNumber,
         supplier,
-
-      poNumber:
         poNumber,
-
-      date:
         date,
-
-      itemName:
         itemName,
-
-      code:
         code,
-
-      cartonNumber:
         cartonNumber,
-
-      quantity:
         quantity
-
-    };
-
-
-    /*
-      Save the item permanently
-      in this browser.
-    */
-
-    saveItemsDatabase();
+      };
 
 
-    console.log(
-      "Item saved:",
-      itemsDatabase[
-        barcodeNumber
-      ]
-    );
 
 
-    /* ========================================
-       DISPLAY INFORMATION
-    ======================================== */
 
-    document.getElementById(
-      "displayItemName"
-    ).textContent =
-      itemName;
+      const savedItem =
+        await saveItemToSupabase(item);
 
 
-    document.getElementById(
-      "displaySupplier"
-    ).textContent =
-      supplier;
 
 
-    document.getElementById(
-      "displayPoNumber"
-    ).textContent =
-      poNumber;
 
-
-    document.getElementById(
-      "displayDate"
-    ).textContent =
-      date;
-
-
-    document.getElementById(
-      "displayCode"
-    ).textContent =
-      code;
-
-
-    document.getElementById(
-      "displayCartonNumber"
-    ).textContent =
-      cartonNumber;
-
-
-    document.getElementById(
-      "displayQuantity"
-    ).textContent =
-      quantity;
-
-
-    /* ========================================
-       GENERATE BARCODE
-    ======================================== */
-
-    if (
-      typeof JsBarcode ===
-      "undefined"
-    ) {
-
-      alert(
-        "Barcode generator failed to load."
+      console.log(
+        "Saved item:",
+        savedItem
       );
 
-      return;
+
+      itemsDatabase[barcodeNumber] =
+        item;
+
+      saveItemsDatabase();
+
+
+      document.getElementById(
+        "displayItemName"
+      ).textContent =
+        savedItem.item_name;
+
+      document.getElementById(
+        "displaySupplier"
+      ).textContent =
+        savedItem.supplier;
+
+      document.getElementById(
+        "displayPoNumber"
+      ).textContent =
+        savedItem.po_number;
+
+      document.getElementById(
+        "displayDate"
+      ).textContent =
+        savedItem.item_date;
+
+      document.getElementById(
+        "displayCode"
+      ).textContent =
+        savedItem.code;
+
+      document.getElementById(
+        "displayCartonNumber"
+      ).textContent =
+        savedItem.carton_number;
+
+      document.getElementById(
+        "displayQuantity"
+      ).textContent =
+        savedItem.quantity;
+
+
+      JsBarcode(
+        "#barcode",
+        savedItem.barcode,
+        {
+          format: "CODE128",
+          displayValue: true,
+          width: 3,
+          height: 150,
+          margin: 10
+        }
+      );
+
+
+      addItemScreen.classList.add(
+        "hidden"
+      );
+
+      itemCreatedScreen.classList.remove(
+        "hidden"
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "ERROR:",
+        error
+      );
+
+      (
+        "ERROR:\n\n" +
+        error.message
+      );
 
     }
-
-
-    JsBarcode(
-      "#barcode",
-      barcodeNumber,
-      {
-
-        format:
-          "CODE128",
-
-        displayValue:
-          true,
-
-        width:
-          2,
-
-        height:
-          90,
-
-        margin:
-          10
-
-      }
-    );
-
-
-    /* ========================================
-       SHOW CREATED SCREEN
-    ======================================== */
-
-    addItemScreen.classList.add(
-      "hidden"
-    );
-
-
-    itemCreatedScreen.classList.remove(
-      "hidden"
-    );
 
   }
 );
