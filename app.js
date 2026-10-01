@@ -2,7 +2,6 @@
 console.log("app.js loaded");
 
 
-
 /* ==========================================
    SCREENS
 ========================================== */
@@ -16,6 +15,8 @@ const addItemScreen =
 const itemCreatedScreen =
   document.getElementById("itemCreatedScreen");
 
+const scannerScreen =
+  document.getElementById("scannerScreen");
 
 
 /* ==========================================
@@ -46,9 +47,36 @@ const downloadButton =
 const printButton =
   document.getElementById("printButton");
 
+const scannerBackButton =
+  document.getElementById("scannerBackButton");
+
+
 const itemForm =
   document.getElementById("itemForm");
 
+
+/* ==========================================
+   SCANNER
+========================================== */
+
+const scanResult =
+  document.getElementById("scanResult");
+
+let html5QrCode = null;
+
+
+/* ==========================================
+   TEMPORARY DATABASE
+========================================== */
+
+/*
+  This is only temporary.
+
+  Later, we will replace this with
+  your real database.
+*/
+
+const itemsDatabase = {};
 
 
 /* ==========================================
@@ -56,7 +84,6 @@ const itemForm =
 ========================================== */
 
 let nextItemId = 1;
-
 
 
 /* ==========================================
@@ -75,7 +102,6 @@ addItemButton.addEventListener(
 );
 
 
-
 /* ==========================================
    BACK → HOME
 ========================================== */
@@ -92,26 +118,8 @@ backButton.addEventListener(
 );
 
 
-
 /* ==========================================
-   SCANNER
-========================================== */
-
-const scannerScreen =
-  document.getElementById("scannerScreen");
-
-const scannerBackButton =
-  document.getElementById("scannerBackButton");
-
-const scanResult =
-  document.getElementById("scanResult");
-
-
-let html5QrCode = null;
-
-
-/* ==========================================
-   OPEN SCANNER
+   HOME → SCANNER
 ========================================== */
 
 scanButton.addEventListener(
@@ -126,7 +134,6 @@ scanButton.addEventListener(
 
   }
 );
-
 
 
 /* ==========================================
@@ -144,11 +151,9 @@ function startScanner() {
 
 
   html5QrCode.start(
-
     {
       facingMode: "environment"
     },
-
     {
       fps: 10,
 
@@ -170,9 +175,9 @@ function startScanner() {
       );
 
 
-      scanResult.textContent =
-        "Barcode: " +
-        decodedText;
+      handleScannedBarcode(
+        decodedText
+      );
 
 
       stopScanner();
@@ -182,12 +187,7 @@ function startScanner() {
     function (errorMessage) {
 
       /*
-        This fires constantly while
-        the camera is looking for a
-        barcode.
-
-        We don't need to display
-        these messages.
+        Ignore continuous scanner errors.
       */
 
     }
@@ -210,6 +210,62 @@ function startScanner() {
 }
 
 
+/* ==========================================
+   HANDLE SCANNED BARCODE
+========================================== */
+
+function handleScannedBarcode(
+  barcodeNumber
+) {
+
+  const item =
+    itemsDatabase[barcodeNumber];
+
+
+  if (item) {
+
+    scanResult.innerHTML =
+
+      "<strong>Item found!</strong><br><br>" +
+
+      "Item Name: " +
+      item.itemName +
+      "<br>" +
+
+      "Supplier: " +
+      item.supplier +
+      "<br>" +
+
+      "PO #: " +
+      item.poNumber +
+      "<br>" +
+
+      "Code: " +
+      item.code +
+      "<br>" +
+
+      "Carton #: " +
+      item.cartonNumber +
+      "<br>" +
+
+      "Quantity: " +
+      item.quantity;
+
+  }
+
+  else {
+
+    scanResult.innerHTML =
+
+      "<strong>Barcode not found.</strong><br><br>" +
+
+      "Barcode: " +
+      barcodeNumber;
+
+  }
+
+}
+
 
 /* ==========================================
    STOP SCANNER
@@ -223,7 +279,6 @@ function stopScanner() {
   ) {
 
     html5QrCode.stop()
-
       .then(
         function () {
 
@@ -231,7 +286,6 @@ function stopScanner() {
 
         }
       )
-
       .catch(
         function (error) {
 
@@ -248,9 +302,8 @@ function stopScanner() {
 }
 
 
-
 /* ==========================================
-   BACK FROM SCANNER
+   SCANNER → HOME
 ========================================== */
 
 scannerBackButton.addEventListener(
@@ -259,9 +312,11 @@ scannerBackButton.addEventListener(
 
     stopScanner();
 
+
     scannerScreen.classList.add(
       "hidden"
     );
+
 
     homeScreen.classList.remove(
       "hidden"
@@ -269,7 +324,6 @@ scannerBackButton.addEventListener(
 
   }
 );
-
 
 
 /* ==========================================
@@ -283,15 +337,20 @@ itemForm.addEventListener(
     event.preventDefault();
 
 
-    /* Create barcode */
+    /* ========================================
+       CREATE BARCODE
+    ======================================== */
 
     const barcodeNumber =
       String(nextItemId).padStart(6, "0");
 
+
     nextItemId++;
 
 
-    /* Get information */
+    /* ========================================
+       GET INFORMATION
+    ======================================== */
 
     const supplier =
       document.getElementById(
@@ -335,8 +394,48 @@ itemForm.addEventListener(
       ).value;
 
 
+    /* ========================================
+       SAVE TO TEMPORARY DATABASE
+    ======================================== */
 
-    /* Display information */
+    itemsDatabase[barcodeNumber] = {
+
+      barcode:
+        barcodeNumber,
+
+      supplier:
+        supplier,
+
+      poNumber:
+        poNumber,
+
+      date:
+        date,
+
+      itemName:
+        itemName,
+
+      code:
+        code,
+
+      cartonNumber:
+        cartonNumber,
+
+      quantity:
+        quantity
+
+    };
+
+
+    console.log(
+      "Item saved:",
+      itemsDatabase[barcodeNumber]
+    );
+
+
+    /* ========================================
+       DISPLAY INFORMATION
+    ======================================== */
 
     document.getElementById(
       "displayItemName"
@@ -380,7 +479,6 @@ itemForm.addEventListener(
       quantity;
 
 
-
     /* ========================================
        GENERATE BARCODE
     ======================================== */
@@ -404,19 +502,23 @@ itemForm.addEventListener(
       barcodeNumber,
       {
 
-        format: "CODE128",
+        format:
+          "CODE128",
 
-        displayValue: true,
+        displayValue:
+          true,
 
-        width: 2,
+        width:
+          2,
 
-        height: 120,
+        height:
+          90,
 
-        margin: 10
+        margin:
+          10
 
       }
     );
-
 
 
     /* ========================================
@@ -427,13 +529,13 @@ itemForm.addEventListener(
       "hidden"
     );
 
+
     itemCreatedScreen.classList.remove(
       "hidden"
     );
 
   }
 );
-
 
 
 /* ==========================================
@@ -445,10 +547,6 @@ function createLabelImage() {
   return new Promise(
     function (resolve) {
 
-
-      /* ======================================
-         GET INFORMATION
-      ====================================== */
 
       const barcode =
         document.getElementById(
@@ -492,11 +590,6 @@ function createLabelImage() {
         ).textContent;
 
 
-
-      /* ======================================
-         BARCODE SVG
-      ====================================== */
-
       const svg =
         new XMLSerializer()
           .serializeToString(
@@ -524,18 +617,9 @@ function createLabelImage() {
         new Image();
 
 
-
-      /* ======================================
-         LOAD BARCODE
-      ====================================== */
-
       barcodeImage.onload =
         function () {
 
-
-          /* ==================================
-             CANVAS
-          ================================== */
 
           const canvas =
             document.createElement(
@@ -549,23 +633,13 @@ function createLabelImage() {
             );
 
 
-          /*
-            This is the actual label.
-
-            1200 × 800 gives us enough
-            room for the barcode and
-            information.
-          */
-
-          canvas.width = 1200;
-
-          canvas.height = 900;
+          canvas.width =
+            1200;
 
 
+          canvas.height =
+            900;
 
-          /* ==================================
-             WHITE BACKGROUND
-          ================================== */
 
           ctx.fillStyle =
             "#ffffff";
@@ -575,45 +649,29 @@ function createLabelImage() {
             0,
             0,
             1200,
-            800
+            900
           );
 
-
-
-          /* ==================================
-             BORDER
-          ================================== */
 
           ctx.strokeStyle =
             "#000000";
 
 
-          ctx.lineWidth = 5;
+          ctx.lineWidth =
+            5;
 
 
           ctx.strokeRect(
             20,
             20,
             1160,
-            760
+            860
           );
 
 
+          const maxWidth =
+            1080;
 
-          /* ==================================
-             BARCODE
-          ================================== */
-
-          /*
-            IMPORTANT:
-
-            We do NOT stretch the barcode.
-
-            We calculate its natural
-            proportions.
-          */
-
-          const maxWidth = 1080;
 
           const naturalRatio =
             barcodeImage.height /
@@ -633,13 +691,13 @@ function createLabelImage() {
 
 
           const barcodeX =
-            (
-              1200 -
-              barcodeWidth
-            ) / 2;
+            (1200 -
+              barcodeWidth) /
+            2;
 
 
-          const barcodeY = 35;
+          const barcodeY =
+            35;
 
 
           ctx.drawImage(
@@ -651,26 +709,22 @@ function createLabelImage() {
           );
 
 
-
-          /* ==================================
-             ITEM INFORMATION
-          ================================== */
-
           const infoStartY =
             barcodeY +
             barcodeHeight +
             45;
 
 
-          const leftX = 100;
+          const leftX =
+            100;
 
 
           let y =
             infoStartY;
 
 
-          const spacing = 65;
-
+          const spacing =
+            65;
 
 
           function drawInfo(
@@ -713,11 +767,6 @@ function createLabelImage() {
           }
 
 
-
-          /* ==================================
-             LABEL INFORMATION
-          ================================== */
-
           drawInfo(
             "Supplier:",
             supplier
@@ -754,11 +803,6 @@ function createLabelImage() {
           );
 
 
-
-          /* ==================================
-             FINISH
-          ================================== */
-
           URL.revokeObjectURL(
             svgURL
           );
@@ -776,7 +820,6 @@ function createLabelImage() {
         };
 
 
-
       barcodeImage.onerror =
         function () {
 
@@ -792,7 +835,6 @@ function createLabelImage() {
         };
 
 
-
       barcodeImage.src =
         svgURL;
 
@@ -800,7 +842,6 @@ function createLabelImage() {
   );
 
 }
-
 
 
 /* ==========================================
@@ -870,7 +911,6 @@ downloadButton.addEventListener(
 );
 
 
-
 /* ==========================================
    SHARE LABEL
 ========================================== */
@@ -903,10 +943,6 @@ shareButton.addEventListener(
       );
 
 
-    /* ======================================
-       NATIVE PHONE SHARE
-    ====================================== */
-
     if (
       navigator.share &&
       navigator.canShare &&
@@ -929,13 +965,6 @@ shareButton.addEventListener(
 
       } catch (error) {
 
-        /*
-          User may simply have cancelled
-          the share menu.
-
-          We don't need to show an error.
-        */
-
         console.log(
           "Share cancelled."
         );
@@ -943,11 +972,6 @@ shareButton.addEventListener(
       }
 
     }
-
-
-    /* ======================================
-       FALLBACK
-    ====================================== */
 
     else {
 
@@ -1001,7 +1025,6 @@ shareButton.addEventListener(
 
   }
 );
-
 
 
 /* ==========================================
@@ -1116,7 +1139,6 @@ printButton.addEventListener(
 );
 
 
-
 /* ==========================================
    BACK FROM CREATED ITEM
 ========================================== */
@@ -1129,13 +1151,13 @@ createdBackButton.addEventListener(
       "hidden"
     );
 
+
     homeScreen.classList.remove(
       "hidden"
     );
 
   }
 );
-
 
 
 /* ==========================================
@@ -1150,9 +1172,11 @@ doneButton.addEventListener(
       "hidden"
     );
 
+
     homeScreen.classList.remove(
       "hidden"
     );
+
 
     itemForm.reset();
 
