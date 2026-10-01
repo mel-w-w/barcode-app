@@ -1,0 +1,374 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Barcode App</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"
+  ></script>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+</head>
+
+
+<body>
+
+  <main class="app">
+
+
+    <!-- HOME -->
+
+    <section id="homeScreen">
+
+      <header class="app-header">
+        <h1>Barcode App</h1>
+      </header>
+
+      <div class="screen-content">
+
+        <button
+          type="button"
+          class="primary-button"
+          id="scanButton"
+        >
+          Scan Barcode
+        </button>
+
+        <button
+          type="button"
+          class="secondary-button"
+          id="addItemButton"
+        >
+          Add New Item
+        </button>
+
+      </div>
+
+    </section>
+
+<!-- SCANNER -->
+
+<section
+  id="scannerScreen"
+  class="hidden"
+>
+
+  <header class="app-header">
+
+    <button
+      type="button"
+      class="back-button"
+      id="scannerBackButton"
+    >
+      ← Back
+    </button>
+
+    <h1>Scan Barcode</h1>
+
+  </header>
+
+
+  <div class="screen-content">
+
+    <div id="reader"></div>
+
+    <p id="scanResult">
+      Point your camera at a barcode.
+    </p>
+
+  </div>
+
+</section>
+
+    <!-- ADD ITEM -->
+
+    <section
+      id="addItemScreen"
+      class="hidden"
+    >
+
+      <header class="app-header">
+
+        <button
+          type="button"
+          class="back-button"
+          id="backButton"
+        >
+          ← Back
+        </button>
+
+        <h1>Add New Item</h1>
+
+      </header>
+
+
+      <div class="screen-content">
+
+        <form id="itemForm">
+
+
+          <div class="form-field">
+
+            <label for="supplier">
+              Supplier
+            </label>
+
+            <input
+              type="text"
+              id="supplier"
+              placeholder="Enter supplier"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="poNumber">
+              PO #
+            </label>
+
+            <input
+              type="text"
+              id="poNumber"
+              placeholder="Enter PO number"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="itemDate">
+              Date
+            </label>
+
+            <input
+              type="date"
+              id="itemDate"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="itemName">
+              Item Name
+            </label>
+
+            <input
+              type="text"
+              id="itemName"
+              placeholder="Enter item name"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="itemCode">
+              Code
+            </label>
+
+            <input
+              type="text"
+              id="itemCode"
+              placeholder="Enter internal code"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="cartonNumber">
+              Carton #
+            </label>
+
+            <input
+              type="text"
+              id="cartonNumber"
+              placeholder="Enter carton number"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="quantity">
+              Quantity
+            </label>
+
+            <input
+              type="number"
+              id="quantity"
+              placeholder="Enter quantity"
+              min="0"
+              required
+            >
+
+          </div>
+
+
+          <button
+            type="submit"
+            class="primary-button"
+          >
+            Save & Generate Barcode
+          </button>
+
+
+        </form>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- ITEM CREATED -->
+
+    <section
+      id="itemCreatedScreen"
+      class="hidden"
+    >
+
+      <header class="app-header">
+
+        <button
+          type="button"
+          class="back-button"
+          id="createdBackButton"
+        >
+          ← Back
+        </button>
+
+        <h1>Item Created</h1>
+
+      </header>
+
+
+      <div class="screen-content">
+
+
+        <div class="item-details">
+
+          <h2 id="displayItemName">
+            Item Name
+          </h2>
+
+          <p>
+            <strong>Supplier:</strong>
+            <span id="displaySupplier"></span>
+          </p>
+
+          <p>
+            <strong>PO #:</strong>
+            <span id="displayPoNumber"></span>
+          </p>
+
+          <p>
+            <strong>Date:</strong>
+            <span id="displayDate"></span>
+          </p>
+
+          <p>
+            <strong>Code:</strong>
+            <span id="displayCode"></span>
+          </p>
+
+          <p>
+            <strong>Carton #:</strong>
+            <span id="displayCartonNumber"></span>
+          </p>
+
+          <p>
+            <strong>Quantity:</strong>
+            <span id="displayQuantity"></span>
+          </p>
+
+        </div>
+
+
+        <!-- BARCODE PREVIEW -->
+
+        <div class="barcode-container">
+
+          <svg id="barcode"></svg>
+
+        </div>
+
+
+        <!-- ACTION BUTTONS -->
+
+        <button
+          type="button"
+          class="primary-button"
+          id="shareButton"
+        >
+          Share Label
+        </button>
+
+
+        <button
+          type="button"
+          class="secondary-button"
+          id="downloadButton"
+        >
+          Download Label
+        </button>
+
+
+        <button
+          type="button"
+          class="secondary-button"
+          id="printButton"
+        >
+          Print Label
+        </button>
+
+
+        <button
+          type="button"
+          class="secondary-button"
+          id="doneButton"
+        >
+          Done
+        </button>
+
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+
+  <script src="app.js"></script>
+
+</body>
+
+</html>
