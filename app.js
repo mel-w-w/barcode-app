@@ -352,7 +352,7 @@ function startScanner() {
 async function handleScannedBarcode(
   barcodeNumber
 ) {
-
+   alert("Scanner read: [" + barcodeNumber + "]");
   scanResult.textContent =
     "Looking up item...";
 
