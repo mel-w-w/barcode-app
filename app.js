@@ -6,7 +6,7 @@ console.log("app.js loaded");
 ========================================== */
 
 const SUPABASE_URL =
-  "https://zzwdmrkiasgekmvzwevh.supabase.co/rest/v1/";
+  "https://zzwdmrkiasgekmvzwevh.supabase.co/";
 
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_1qQFoh-2KdGeAIRUH7unqQ_8exVOpzz";
@@ -1296,21 +1296,3 @@ doneButton.addEventListener(
 
   }
 );
-
-async function testSupabaseConnection() {
-  const { data, error } = await supabaseClient
-    .from("items")
-    .select("id")
-    .limit(1);
-
-  if (error) {
-    console.error("Supabase connection failed:", error);
-    alert("Supabase connection failed. Check the browser console.");
-    return;
-  }
-
-  console.log("Supabase connection successful!", data);
-  alert("Supabase connection successful!");
-}
-
-testSupabaseConnection();
