@@ -66,24 +66,71 @@ let html5QrCode = null;
 
 
 /* ==========================================
-   TEMPORARY DATABASE
+   LOCAL DATABASE
 ========================================== */
 
 /*
-  This is only temporary.
+  Load previously saved items.
 
-  Later, we will replace this with
-  your real database.
+  If there are no saved items yet,
+  start with an empty object.
 */
 
-const itemsDatabase = {};
+let itemsDatabase =
+  JSON.parse(
+    localStorage.getItem(
+      "itemsDatabase"
+    )
+  ) || {};
+
+
+/*
+  Save the database to the phone.
+*/
+
+function saveItemsDatabase() {
+
+  localStorage.setItem(
+    "itemsDatabase",
+    JSON.stringify(
+      itemsDatabase
+    )
+  );
+
+}
 
 
 /* ==========================================
-   TEMPORARY BARCODE NUMBER
+   BARCODE NUMBER
 ========================================== */
 
-let nextItemId = 1;
+/*
+  Find the next barcode number.
+
+  This prevents the app from going back
+  to 000001 after the page is refreshed.
+*/
+
+let nextItemId =
+  Number(
+    localStorage.getItem(
+      "nextItemId"
+    )
+  ) || 1;
+
+
+/*
+  Save the next barcode number.
+*/
+
+function saveNextItemId() {
+
+  localStorage.setItem(
+    "nextItemId",
+    String(nextItemId)
+  );
+
+}
 
 
 /* ==========================================
@@ -94,9 +141,13 @@ addItemButton.addEventListener(
   "click",
   function () {
 
-    homeScreen.classList.add("hidden");
+    homeScreen.classList.add(
+      "hidden"
+    );
 
-    addItemScreen.classList.remove("hidden");
+    addItemScreen.classList.remove(
+      "hidden"
+    );
 
   }
 );
@@ -110,9 +161,13 @@ backButton.addEventListener(
   "click",
   function () {
 
-    addItemScreen.classList.add("hidden");
+    addItemScreen.classList.add(
+      "hidden"
+    );
 
-    homeScreen.classList.remove("hidden");
+    homeScreen.classList.remove(
+      "hidden"
+    );
 
   }
 );
@@ -126,9 +181,13 @@ scanButton.addEventListener(
   "click",
   function () {
 
-    homeScreen.classList.add("hidden");
+    homeScreen.classList.add(
+      "hidden"
+    );
 
-    scannerScreen.classList.remove("hidden");
+    scannerScreen.classList.remove(
+      "hidden"
+    );
 
     startScanner();
 
@@ -147,21 +206,28 @@ function startScanner() {
 
 
   html5QrCode =
-    new Html5Qrcode("reader");
+    new Html5Qrcode(
+      "reader"
+    );
 
 
   html5QrCode.start(
     {
-      facingMode: "environment"
+      facingMode:
+        "environment"
     },
+
     {
-      fps: 10,
+      fps:
+        10,
 
       qrbox: {
-        width: 300,
-        height: 150
-      }
+        width:
+          300,
 
+        height:
+          150
+      }
     },
 
     function (
@@ -219,7 +285,9 @@ function handleScannedBarcode(
 ) {
 
   const item =
-    itemsDatabase[barcodeNumber];
+    itemsDatabase[
+      barcodeNumber
+    ];
 
 
   if (item) {
@@ -342,10 +410,18 @@ itemForm.addEventListener(
     ======================================== */
 
     const barcodeNumber =
-      String(nextItemId).padStart(6, "0");
+      String(
+        nextItemId
+      ).padStart(
+        6,
+        "0"
+      );
 
 
     nextItemId++;
+
+
+    saveNextItemId();
 
 
     /* ========================================
@@ -395,10 +471,12 @@ itemForm.addEventListener(
 
 
     /* ========================================
-       SAVE TO TEMPORARY DATABASE
+       SAVE ITEM
     ======================================== */
 
-    itemsDatabase[barcodeNumber] = {
+    itemsDatabase[
+      barcodeNumber
+    ] = {
 
       barcode:
         barcodeNumber,
@@ -427,9 +505,19 @@ itemForm.addEventListener(
     };
 
 
+    /*
+      Save the item permanently
+      in this browser.
+    */
+
+    saveItemsDatabase();
+
+
     console.log(
       "Item saved:",
-      itemsDatabase[barcodeNumber]
+      itemsDatabase[
+        barcodeNumber
+      ]
     );
 
 
@@ -857,8 +945,12 @@ downloadButton.addEventListener(
 
 
     const barcodeNumber =
-      String(nextItemId - 1)
-        .padStart(6, "0");
+      String(
+        nextItemId - 1
+      ).padStart(
+        6,
+        "0"
+      );
 
 
     const url =
@@ -924,8 +1016,12 @@ shareButton.addEventListener(
 
 
     const barcodeNumber =
-      String(nextItemId - 1)
-        .padStart(6, "0");
+      String(
+        nextItemId - 1
+      ).padStart(
+        6,
+        "0"
+      );
 
 
     const file =
@@ -963,7 +1059,9 @@ shareButton.addEventListener(
 
         });
 
-      } catch (error) {
+      }
+
+      catch (error) {
 
         console.log(
           "Share cancelled."
