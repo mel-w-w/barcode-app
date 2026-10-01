@@ -1,6 +1,22 @@
 
 console.log("app.js loaded");
 
+/* ==========================================
+   SUPABASE
+========================================== */
+
+const SUPABASE_URL =
+  "https://zzwdmrkiasgekmvzwevh.supabase.co/rest/v1/";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_1qQFoh-2KdGeAIRUH7unqQ_8exVOpzz";
+
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
 
 /* ==========================================
    SCREENS
